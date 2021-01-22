@@ -81,6 +81,17 @@ class LuisHelper:
                             from_entities[0]["text"].capitalize()
                         )
 
+                budget_entities = recognizer_result.entities.get("$instance", {}).get(
+                    "budget", []
+                )
+                print("luis_helper.py :",budget_entities)
+                print("Voici le budget :",budget_entities[0]["text"].capitalize()) 
+                if len(budget_entities) > 0:
+                    if  budget_entities[0].get("text",''):
+                        result.budget = budget_entities[0]["text"].capitalize()
+                    else:
+                        result.budget = ""
+
                 # This value will be a TIMEX. And we are only interested in a Date so grab the first result and drop
                 # the Time part. TIMEX is a format that represents DateTime expressions that include some ambiguity.
                 # e.g. missing a Year.
@@ -91,10 +102,10 @@ class LuisHelper:
                     if timex:
                         datetime = timex[0].split("T")[0]
 
-                        result.travel_date = datetime
+                        result.from_date = datetime
 
                 else:
-                    result.travel_date = None
+                    result.from_date = None
 
         except Exception as exception:
             print(exception)

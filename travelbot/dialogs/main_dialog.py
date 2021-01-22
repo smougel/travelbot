@@ -83,7 +83,7 @@ class MainDialog(ComponentDialog):
 
 
         if intent == Intent.CANCEL.value:
-            get_cancel_text = "Ok vous souhaitez annuler !"
+            get_cancel_text = "Ok your travel is cancelled !"
             get_cancel_message = MessageFactory.text(
                 get_cancel_text, get_cancel_text, InputHints.ignoring_input
             )

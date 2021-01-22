@@ -37,9 +37,15 @@ class DateResolverDialog(CancelAndHelpDialog):
     async def initial_step(
         self, step_context: WaterfallStepContext
     ) -> DialogTurnResult:
-        timex = step_context.options
+        timex = step_context.options['field']
+        booking_details = step_context.options['booking_details']
 
-        prompt_msg_text = "On what date would you like to travel?"
+        
+        if booking_details.from_date is None:
+            prompt_msg_text = "When do you want to fly?"
+        else:
+            prompt_msg_text = "When will you return?"
+            
         prompt_msg = MessageFactory.text(
             prompt_msg_text, prompt_msg_text, InputHints.expecting_input
         )
