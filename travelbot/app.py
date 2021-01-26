@@ -28,7 +28,23 @@ from bots import DialogAndWelcomeBot
 from adapter_with_error_handler import AdapterWithErrorHandler
 from flight_booking_recognizer import FlightBookingRecognizer
 
+import logging
+from opencensus.ext.azure.log_exporter import AzureLogHandler, AzureEventHandler
+from opencensus.ext.azure import metrics_exporter
+
 CONFIG = DefaultConfig()
+
+logger = logging.getLogger(__name__)
+
+logger.addHandler(AzureLogHandler(
+    connection_string='InstrumentationKey='+CONFIG.INSTRUMENTATION_KEY)
+)
+logger.addHandler(AzureEventHandler(connection_string='InstrumentationKey='+CONFIG.INSTRUMENTATION_KEY))
+exporter = metrics_exporter.new_metrics_exporter(
+    connection_string='InstrumentationKey='+CONFIG.INSTRUMENTATION_KEY)
+
+
+
 
 # Create adapter.
 # See https://aka.ms/about-bot-adapter to learn more about how bots work.
@@ -49,6 +65,8 @@ BOOKING_DIALOG = BookingDialog()
 DIALOG = MainDialog(RECOGNIZER, BOOKING_DIALOG)
 BOT = DialogAndWelcomeBot(CONVERSATION_STATE, USER_STATE, DIALOG)
 
+BOOKING_DIALOG.set_logger(logger)
+BOOKING_DIALOG.set_metrics_exporter(exporter)
 
 # Listen for incoming requests on /api/messages.
 async def messages(req: Request) -> Response:

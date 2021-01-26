@@ -10,6 +10,12 @@ from botbuilder.schema import InputHints
 from .cancel_and_help_dialog import CancelAndHelpDialog
 from .date_resolver_dialog import DateResolverDialog
 
+from opencensus.stats import aggregation as aggregation_module
+from opencensus.stats import measure as measure_module
+from opencensus.stats import stats as stats_module
+from opencensus.stats import view as view_module
+from opencensus.tags import tag_map as tag_map_module
+from datetime import datetime
 
 class BookingDialog(CancelAndHelpDialog):
     def __init__(self, dialog_id: str = None):
@@ -34,6 +40,29 @@ class BookingDialog(CancelAndHelpDialog):
         )
 
         self.initial_dialog_id = WaterfallDialog.__name__
+        self.logger = None
+        self.stats = stats_module.stats
+        self.view_manager = self.stats.view_manager
+        self.stats_recorder = self.stats.stats_recorder
+        self.bot_measure = measure_module.MeasureInt("botdefects",
+                                           "number of bot defects",
+                                           "botdefects")
+        self.bot_view = view_module.View("defect view",
+                                    "number of bot defects",
+                                    [],
+                                    self.bot_measure,
+                                    aggregation_module.CountAggregation())
+        self.view_manager.register_view(self.bot_view)
+        self.mmap = self.stats_recorder.new_measurement_map()
+        self.tmap = tag_map_module.TagMap()
+        self.metrics_exporter = None
+
+    def set_logger(self, logger):
+        self.logger = logger
+
+    def set_metrics_exporter(self, metrics_exporter):
+        self.metrics_exporter = metrics_exporter
+        self.view_manager.register_exporter(metrics_exporter)
 
     async def destination_step(
         self, step_context: WaterfallStepContext
@@ -177,8 +206,16 @@ class BookingDialog(CancelAndHelpDialog):
         """
         if step_context.result:
             booking_details = step_context.options
-
             return await step_context.end_dialog(booking_details)
+
+        properties = {'custom_dimensions': {'key_1': 'value_1', 'key_2': 'value_2'}}
+
+        self.logger.warning("User has not confirmed flight",extra=properties)
+        self.mmap.measure_int_put(self.bot_measure, 1)
+        self.mmap.record(self.tmap)
+        metrics = list(self.mmap.measure_to_view_map.get_metrics(datetime.utcnow()))
+        print(metrics[0].time_series[0].points[0])
+
         return await step_context.end_dialog()
 
     def is_ambiguous(self, timex: str) -> bool:
