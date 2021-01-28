@@ -71,7 +71,6 @@ requests-oauthlib==1.3.0
 rsa==4.7
 six==1.15.0
 toml==0.10.2
--e git+git@github.com:smougel/travelbot.git@f17a3c5a7ca54cbbc64b6b0dcf2ceb30c921036a#egg=travelbot&subdirectory=travelbot
 typing-extensions==3.7.4.3
 urllib3==1.25.11
 whichcraft==0.6.1
