@@ -22,4 +22,28 @@ jobs:
           pip install -r tests/requirements.txt
           pip install -e travelbot/
       - name: Run tests with pytest
-        run: pytest 
+        run: pytest
+
+build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Set up Python version
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.8'
+
+    - name: Build using AppService-Build
+      uses: azure/appservice-build@v2
+      with:
+        platform: python
+        platform-version: '3.8'
+
+    - name: 'Deploy to Azure Web App'
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'smougelwebappchatbot'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_d1365c5c332c4a248730b8c40bfc5c0e }}        
