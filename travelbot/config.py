@@ -18,4 +18,4 @@ class DefaultConfig:
     LUIS_API_KEY = os.environ.get("LuisAPIKey", "")
 
     LUIS_API_HOST_NAME = os.environ.get("LuisAPIHostName", "")
-    INSTRUMENTATION_KEY = ''
+    INSTRUMENTATION_KEY = os.environ.get("INSIGHT_INSTRUMENTATION_KEY","")

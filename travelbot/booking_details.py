@@ -20,3 +20,12 @@ class BookingDetails:
         self.to_date = to_date
         self.budget = budget
         self.unsupported_airports = unsupported_airports
+
+    def get_details(self):
+        return str({
+            "destination":self.destination,
+            "origin":self.origin,
+            "from_date":self.from_date,
+            "to_date:":self.to_date,
+            "budget:":self.budget
+        })

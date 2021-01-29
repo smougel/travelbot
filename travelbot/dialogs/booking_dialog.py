@@ -56,6 +56,7 @@ class BookingDialog(CancelAndHelpDialog):
         self.mmap = self.stats_recorder.new_measurement_map()
         self.tmap = tag_map_module.TagMap()
         self.metrics_exporter = None
+        self.message_history = set()
 
     def set_logger(self, logger):
         self.logger = logger
@@ -73,6 +74,7 @@ class BookingDialog(CancelAndHelpDialog):
         :return DialogTurnResult:
         """
         booking_details = step_context.options
+        self.message_history.add(step_context._turn_context.activity.text)
         print("from :",booking_details.origin)
         print("to :",booking_details.destination)
         print("from date  :",booking_details.from_date)
@@ -96,6 +98,8 @@ class BookingDialog(CancelAndHelpDialog):
         :return DialogTurnResult:
         """
         booking_details = step_context.options
+        print("User message : ",step_context._turn_context.activity.text)
+        self.message_history.add(step_context._turn_context.activity.text)
 
         # Capture the response to the previous step's prompt
         booking_details.destination = step_context.result
@@ -120,7 +124,7 @@ class BookingDialog(CancelAndHelpDialog):
         :return DialogTurnResult:
         """
         booking_details = step_context.options
-
+        self.message_history.add(step_context._turn_context.activity.text)
         # Capture the results of the previous step
         booking_details.origin = step_context.result
         if not booking_details.from_date or self.is_ambiguous(
@@ -141,6 +145,7 @@ class BookingDialog(CancelAndHelpDialog):
         :return DialogTurnResult:
         """
         booking_details = step_context.options
+        self.message_history.add(step_context._turn_context.activity.text)
 
         # Capture the results of the previous step
         booking_details.from_date = step_context.result
@@ -160,6 +165,7 @@ class BookingDialog(CancelAndHelpDialog):
         """
         booking_details = step_context.options
         booking_details.to_date = step_context.result
+        self.message_history.add(step_context._turn_context.activity.text)
 
         if booking_details.budget is None:
             message_text = "What's your budget?"
@@ -180,6 +186,7 @@ class BookingDialog(CancelAndHelpDialog):
         :return DialogTurnResult:
         """
         booking_details = step_context.options
+        self.message_history.add(step_context._turn_context.activity.text)
 
         # Capture the results of the previous step
         booking_details.budget = step_context.result
@@ -208,13 +215,19 @@ class BookingDialog(CancelAndHelpDialog):
             booking_details = step_context.options
             return await step_context.end_dialog(booking_details)
 
-        properties = {'custom_dimensions': {'key_1': 'value_1', 'key_2': 'value_2'}}
+        properties = {'custom_dimensions': {'booking_details': step_context.options.get_details(),'message_history':str(self.message_history)}}
 
         self.logger.warning("User has not confirmed flight",extra=properties)
         self.mmap.measure_int_put(self.bot_measure, 1)
         self.mmap.record(self.tmap)
         metrics = list(self.mmap.measure_to_view_map.get_metrics(datetime.utcnow()))
         print(metrics[0].time_series[0].points[0])
+
+        get_sorry_text = "Sorry about that !"
+        get_sorry_message = MessageFactory.text(
+            get_sorry_text, get_sorry_text, InputHints.ignoring_input
+        )
+        await step_context.context.send_activity(get_sorry_message)
 
         return await step_context.end_dialog()
 
