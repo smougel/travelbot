@@ -1,4 +1,4 @@
-from travelbot.dialogs import BookingDialog
+from dialogs import BookingDialog
 
 class TestBookingDialog():
 
