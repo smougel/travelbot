@@ -210,5 +210,5 @@ obj["patterns"] = []
 obj["utterances"] = utterances
 obj["settings"] = []
 
-write_result('../travelbot/cognitiveModels/Booking4Luis.json',obj)
+write_result('../cognitiveModels/Booking4Luis.json',obj)
 
